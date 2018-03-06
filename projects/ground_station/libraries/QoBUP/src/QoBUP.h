@@ -17,6 +17,24 @@
  * See the QoBUP ICD for any details, features, and limitations
  * pertaining to the protocol.
  */
+
+#pragma GCC diagnostic warning "-Wall"
+#pragma GCC diagnostic warning "-Wextra"
+
+#include <stdint.h>
+
+typedef struct q_status {
+    union {
+        uint8_t word;
+        struct {
+           uint8_t bad_msg_id   : 1;
+           uint8_t bad_block_id : 1;
+           uint8_t bad_size     : 1;
+           uint8_t reserved     : 5;
+        };
+    };
+};
+
 class QoBUP {
 
     public:
@@ -50,4 +68,5 @@ class QoBUP {
         ~QoBUP();
 
     private:
+        q_status status_word /**< The current status of the latest cmd. */
 };

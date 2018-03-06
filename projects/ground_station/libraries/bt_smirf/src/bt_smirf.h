@@ -9,6 +9,7 @@
 #pragma GCC diagnostic warning "-Wall"
 #pragma GCC diagnostic warning "-Wextra"
 
+#include <Arduino.h>
 #include <HardwareSerial.h>
 #include <SoftwareSerial.h>
 #include <stdint.h>
@@ -120,7 +121,7 @@ class bt_smirf {
         Stream *_serial_if; /**< Underlying generic serial interface. */
         HardwareSerial *_hw_serial; /**< HardwareSerial interface. */
         SoftwareSerial *_sw_serial; /**< SoftwareSerial interface. */
-        boolean _internal_serial; /**< Flag to know if we need to free serial if. */
+        bool _internal_serial; /**< Flag to know if we need to free serial if. */
 
         /**
          * States of the Bluetooth module.
