@@ -7,6 +7,7 @@
  *
  */
 
+#include <Arduino.h>
 #include "QoBUP.h"
 
 QoBUP::QoBUP() {
@@ -27,7 +28,7 @@ q_status_msg_t QoBUP::validateMessage(const uint8_t* const cmd) {
     _curr_status.status.word = levelOneValidation(cmd).word;
     return _curr_status;
 }
-#include <HardwareSerial.h>
+
 q_status_t QoBUP::levelOneValidation(const uint8_t* const cmd) {
 
     const q_message_header_t* const startPtr = reinterpret_cast<const q_message_header_t*>(cmd);
@@ -41,7 +42,6 @@ q_status_t QoBUP::levelOneValidation(const uint8_t* const cmd) {
     /* Check we're within max msg size */
     if (msgSize > Q_MAX_SIZE_CMD_BYTES) {
         retval.bad_size = 1;
-        Serial.println("A");
         return retval;
     }
 
@@ -90,4 +90,53 @@ q_status_t QoBUP::levelOneValidation(const uint8_t* const cmd) {
         }
     }
     return retval;
+}
+
+q_status_msg_t QoBUP::serialRxMsg(Stream &s, uint8_t* const cmdBuff, uint8_t size) {
+
+    q_status_msg_t status;
+    q_message_header_t* const startPtr = reinterpret_cast<q_message_header_t* const>(cmdBuff);
+    uint8_t msgSize;
+    unsigned long time;
+
+    status.status.word = 0;
+
+    if (cmdBuff == NULL) {
+        status.status.word = 0xff;
+        return status;
+    }
+
+    /* Wait for data on the serial line */
+    while (s.available() < static_cast<signed int>(sizeof(q_message_header_t)));
+
+    /*
+     * Read the wc field from msg and attempt
+     * to read those many bytes from serial
+     * or timeout and set status accordingly.
+     */
+    startPtr->id = s.read(); /* First word is msg ID */
+    startPtr->wc = s.read();
+    startPtr->sid = s.read();
+    msgSize = startPtr->wc;
+    status.sid = startPtr->sid;
+
+    /* Check our incoming message will fit into buffer */
+    if (size < msgSize) {
+        status.status.bad_size = 1;
+        return status;
+    }
+
+    time = millis();
+    for (size_t i = sizeof(q_message_header_t); i < msgSize; i++) {
+        while (!s.available()) {
+            if ((millis() - time) > Q_SERIAL_TIMEOUT_MS) {
+                status.status.timeout = 1;
+                return status;
+            }
+        }
+        cmdBuff[i] = s.read();
+    }
+
+    /* Run standard validation on message */
+    return validateMessage(cmdBuff);
 }

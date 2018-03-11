@@ -2,14 +2,9 @@
 #include <HardwareSerial.h>
 
 QoBUP qb;
-
-const uint8_t cmd[] = {
-    0xaa,0x0b,0x1d,
-    0x04,0x06,0x10,0x11,0x12,0x13,
-    0xa5,0x02
-};
-
 q_status_msg_t status;
+
+uint8_t cmd[32];
 
 void setup(void) {
     Serial.begin(115200);
@@ -18,18 +13,12 @@ void setup(void) {
     Serial.print("[2J");
 }
 
-int cnt = 0;
+
 void loop(void) {
-    Serial.println("Validating Cmd:");
-    printCmd();
-
-    status = qb.validateMessage(cmd);
-
-    Serial.println("Status returned:");
+    Serial.println("Send a command:");
+    status = qb.serialRxMsg(Serial, cmd, 32);
     printStatus();
-    Serial.print("\n\n");
-
-    while(1);
+    Serial.println();
 }
 
 void printCmd() {
@@ -46,5 +35,4 @@ void printCmd() {
 void printStatus() {
     Serial.print("status = ");
     Serial.println(status.status.word, HEX);
-    delay(1000);
 }
