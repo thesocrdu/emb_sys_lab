@@ -7,6 +7,9 @@
  *
  */
 
+#ifndef QOBUP_H
+#define QOBUP_H
+
 #pragma GCC diagnostic warning "-Wall"
 #pragma GCC diagnostic warning "-Wextra"
 
@@ -169,3 +172,5 @@ class QoBUP {
          */
         q_status_t levelTwoValidation(const uint8_t* const cmd);
 };
+
+#endif /* QOBUP_H */

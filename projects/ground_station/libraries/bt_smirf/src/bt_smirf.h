@@ -6,6 +6,9 @@
  *
  */
 
+#ifndef BT_SMIRF_H
+#define BT_SMIRF_H
+
 #pragma GCC diagnostic warning "-Wall"
 #pragma GCC diagnostic warning "-Wextra"
 
@@ -167,3 +170,5 @@ class bt_smirf {
         char _cmdResp[BT_SMIRF_RESP_BUF_LEN];
 
 };
+
+#endif /* BT_SMIRF_H */
