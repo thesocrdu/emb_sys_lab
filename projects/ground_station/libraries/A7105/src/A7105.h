@@ -111,16 +111,17 @@ class A7105 {
          *       to let another SPI device use the bus
          *       they should call @sa A7105::end() function.
          * @param[in] csPin The Chip Select pin number for the module.
+         * @param[in] useFourWireSpi Whether to configure the chip to
+         *            use pin GIO1 as the MISO pin for SPI.
          */
-        void begin(const uint8_t csPin);
+        void begin(const uint8_t csPin, const bool useFourWireSpi = true);
 
         /**
          * Reads a single register over SPI.
          * @param[in] addr The register offset to read.
-         * @param [in/out] data The preallocated byte buffer
-         *                 to be populated with data.
+         * @return Data stored in the requested register.
          */
-        void read(const uint8_t addr, uint8_t &data);
+        uint8_t read(const uint8_t addr);
 
         /**
          * Write to a single register over SPI
@@ -128,6 +129,18 @@ class A7105 {
          * @param[in] data The byte to write out over SPI.
          */
         void write(const uint8_t addr, const uint8_t data);
+
+        /**
+         * Set the RF ID for this packet session.
+         * @param id The 32-bit ID
+         */
+        void setID(const uint32_t id);
+
+        /**
+         * Sends the provided strobe to device
+         * @param strobe The @sa A7105_State to be sent.
+         */
+        void sendStrobe(const A7105_State strobe);
 
     private:
 

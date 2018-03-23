@@ -29,19 +29,30 @@
 
 /** @} */
 
-A7105::A7105(){
+/**
+ * @defgroup A7105 chip select macros
+ * @{
+ */
+
+#define CS_LOW() digitalWrite(_csPin, LOW)
+#define CS_HIGH() digitalWrite(_csPin, HIGH)
+
+/** @} */
+
+
+A7105::A7105() {
 }
 
-A7105::~A7105(){
+A7105::~A7105() {
 }
 
-void A7105::begin(const uint8_t csPin){
+void A7105::begin(const uint8_t csPin, const bool useFourWireSpi) {
 
     _csPin = csPin;
     pinMode(_csPin, OUTPUT);
 
     /* Driving chip select pin high first seems to help stability. */
-    digitalWrite(_csPin, HIGH);
+    CS_HIGH();
 
     /* Set up the SPI bus parameters. */
     SPI.begin();
@@ -56,8 +67,8 @@ void A7105::begin(const uint8_t csPin){
     /* Send module reset command. */
     delay(1000);
     
-    /* Drive chip select pin low until end() is called. */
-    digitalWrite(_csPin, LOW);
+    /* Drive chip select pin low until is called. */
+    CS_LOW();
     delayMicroseconds(10);
     write(A7105_00_MODE, 0x00);
 
@@ -89,28 +100,56 @@ void A7105::begin(const uint8_t csPin){
      *
      *       EDIT: It seems to behave consistently in 4 wire SPI
      *       mode now. The theory is that the chip select pin
-     *       must be driven high or a brief period and then low
+     *       must be driven high for a brief period and then low
      *       before attempting any communication with the chip.
      */
-     write(A7105_0B_GIO1_PIN_I, 0x19);
+    if (useFourWireSpi) {
+        write(A7105_0B_GIO1_PIN_I, 0x19);
+    }
 
+    CS_HIGH();
 }
 
-void A7105::read(const uint8_t addr, uint8_t &data) {
+uint8_t A7105::read(const uint8_t addr) {
 
-    //data = SPI.transfer16((addr | (A7105_CMD_CONTROL_REG | A7105_RW_READ)) << 8);
+    uint8_t data;
+
+    CS_LOW();
 
     /* Send address in first byte. */
     SPI.transfer(addr | (A7105_CMD_CONTROL_REG | A7105_RW_READ));
 
     /* Do a benign transfer to receive data back. */
     data = SPI.transfer(0x00);
+
+    CS_HIGH();
+
+    return data;
 }
 
 void A7105::write(const uint8_t addr, const uint8_t data) {
 
-    //SPI.transfer16(((addr | (A7105_CMD_CONTROL_REG | A7105_RW_WRITE)) << 8) | data);
+    CS_LOW();
 
     SPI.transfer(addr | (A7105_CMD_CONTROL_REG | A7105_RW_WRITE));
     SPI.transfer(data);
+
+    CS_HIGH();
+}
+
+void A7105::setID(const uint32_t id) {
+
+    CS_LOW();
+    SPI.transfer(A7105_06_ID_DATA);
+    SPI.transfer((id >> 24) & 0xFF);
+    SPI.transfer((id >> 16) & 0xFF);
+    SPI.transfer((id >> 8) & 0xFF);
+    SPI.transfer((id >> 0) & 0xFF);
+    CS_HIGH();
+}
+
+void A7105::sendStrobe(const A7105_State strobe) {
+    CS_LO();
+    SPI.transfer(strobe);
+    CS_HI();
 }
