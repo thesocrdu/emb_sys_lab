@@ -92,6 +92,21 @@ enum A7105_State {
 };
 
 /**
+ * Output power values available for the A7105
+ */
+enum TxPower {
+    TXPOWER_100uW = 0,
+    TXPOWER_300uW = 1,
+    TXPOWER_1mW   = 2,
+    TXPOWER_3mW   = 3,
+    TXPOWER_10mW  = 4,
+    TXPOWER_30mW  = 5,
+    TXPOWER_100mW = 6,
+    TXPOWER_150mW = 7,
+    TXPOWER_LAST  = 8,
+};
+
+/**
  * This class provides an interface for controlling the
  * A7105 RF module. The module talks over the SPI.
  */
@@ -141,6 +156,12 @@ class A7105 {
          * @param strobe The @sa A7105_State to be sent.
          */
         void sendStrobe(const A7105_State strobe);
+
+        /**
+         * Sets the output power of the A7105.
+         * @param[in] The desired @sa TxPower
+         */
+        void A7105::setPower(TxPower power);
 
     private:
 

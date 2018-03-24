@@ -39,7 +39,6 @@
 
 /** @} */
 
-
 A7105::A7105() {
 }
 
@@ -152,4 +151,31 @@ void A7105::sendStrobe(const A7105_State strobe) {
     CS_LO();
     SPI.transfer(strobe);
     CS_HI();
+}
+
+void A7105::setPower(TxPower power) {
+    /*
+    Power amp is ~+16dBm so:
+    TXPOWER_100uW  = -23dBm == PAC=0 TBG=0
+    TXPOWER_300uW  = -20dBm == PAC=0 TBG=1
+    TXPOWER_1mW    = -16dBm == PAC=0 TBG=2
+    TXPOWER_3mW    = -11dBm == PAC=0 TBG=4
+    TXPOWER_10mW   = -6dBm  == PAC=1 TBG=5
+    TXPOWER_30mW   = 0dBm   == PAC=2 TBG=7
+    TXPOWER_100mW  = 1dBm   == PAC=3 TBG=7
+    TXPOWER_150mW  = 1dBm   == PAC=3 TBG=7
+    */
+    uint8_t pac, tbg;
+    switch(power) {
+        case TXPOWER_100uW: pac = 0; tbg = 0; break;
+        case TXPOWER_300uW: pac = 0; tbg = 1; break;
+        case TXPOWER_1mW  : pac = 0; tbg = 2; break;
+        case TXPOWER_3mW  : pac = 0; tbg = 4; break;
+        case TXPOWER_10mW : pac = 1; tbg = 5; break;
+        case TXPOWER_30mW : pac = 2; tbg = 7; break;
+        case TXPOWER_100mW: pac = 3; tbg = 7; break;
+        case TXPOWER_150mW: pac = 3; tbg = 7; break;
+        default: pac = 0; tbg = 0; break;
+    };
+    write(A7105_28_TX_TEST, (pac << 3) | tbg);
 }
