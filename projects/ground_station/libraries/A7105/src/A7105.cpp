@@ -148,9 +148,9 @@ void A7105::setID(const uint32_t id) {
 }
 
 void A7105::sendStrobe(const A7105_State strobe) {
-    CS_LO();
+    CS_LOW();
     SPI.transfer(strobe);
-    CS_HI();
+    CS_HIGH();
 }
 
 void A7105::setPower(TxPower power) {
@@ -178,4 +178,32 @@ void A7105::setPower(TxPower power) {
         default: pac = 0; tbg = 0; break;
     };
     write(A7105_28_TX_TEST, (pac << 3) | tbg);
+}
+
+void A7105::writeData(const uint8_t* const dpbuffer,
+        const uint8_t len,
+        const uint8_t channel) {
+
+    CS_LOW();
+    SPI.transfer(A7105_RST_WRPTR);    //reset write FIFO PTR
+    SPI.transfer(A7105_05_FIFO_DATA); // FIFO DATA register - about to send data to put into FIFO
+    for (unsigned int i = 0; i < len; i++) {
+        SPI.transfer(dpbuffer[i]); // send some data
+    }
+    CS_HIGH();
+
+    // set the channel
+    // REMOVE ME???
+    write(0x0F, channel);
+
+    CS_LOW();
+    SPI.transfer(A7105_TX); // strobe command to actually transmit the daat
+    CS_HIGH();
+}
+
+void A7105::readData(uint8_t* const dpbuffer, const uint8_t len) {
+    sendStrobe(A7105_RST_RDPTR);
+    for(unsigned int i = 0; i < len; i++) {
+        dpbuffer[i] = read(A7105_05_FIFO_DATA);
+    }
 }

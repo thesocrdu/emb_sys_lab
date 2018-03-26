@@ -161,7 +161,24 @@ class A7105 {
          * Sets the output power of the A7105.
          * @param[in] The desired @sa TxPower
          */
-        void A7105::setPower(TxPower power);
+        void setPower(TxPower power);
+
+        /**
+         * Writes the provided data buffer to the A7105.
+         * @param[in] dpbuffer The buffer of data to send.
+         * @param[in] len The length of the buffer in bytes.
+         * @param[in] channel The (unused?) channel ID.
+         */
+        void writeData(const uint8_t* const dpbuffer,
+                const uint8_t len,
+                const uint8_t channel);
+
+        /**
+         * Reads data from the A7105 into the user provided buffer.
+         * @param[in/out] dpbuffer The prellocated buffer to place the data.
+         * @param[in] len The length of the buffer in bytes.
+         */
+        void readData(uint8_t* const dpbuffer, const uint8_t len);
 
     private:
 
