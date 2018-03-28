@@ -201,12 +201,19 @@ void Hubsan::hubsan_build_packet() {
     packet[4] = 0xff - rudder; // get_channel(3, 0x80, 0x80, 0x80); //Rudder is reversed
     packet[6] = 0xff - elevator; // get_channel(1, 0x80, 0x80, 0x80); //Elevator is reversed
     packet[8] = aileron; // get_channel(0, 0x80, 0x80, 0x80);
-    packet[9] = 0x02;
-    packet[10] = 0x64;
-    packet[11] = (txid >> 24) & 0xff;
-    packet[12] = (txid >> 16) & 0xff;
-    packet[13] = (txid >>  8) & 0xff;
-    packet[14] = (txid >>  0) & 0xff;
+    //packet[4] = 0x80; // get_channel(3, 0x80, 0x80, 0x80); //Rudder is reversed
+    //packet[6] = 0x80; // get_channel(1, 0x80, 0x80, 0x80); //Elevator is reversed
+    //packet[8] = 0x80; // get_channel(0, 0x80, 0x80, 0x80);
+    packet[9] = 0x0e;
+    packet[10] = 0x19;
+    //packet[11] = (txid >> 24) & 0xff;
+    //packet[12] = (txid >> 16) & 0xff;
+    //packet[13] = (txid >>  8) & 0xff;
+    //packet[14] = (txid >>  0) & 0xff;
+    packet[11] = 0x00;
+    packet[12] = 0x00;
+    packet[13] = 0x00;
+    packet[14] = 0x00;
     update_crc();
 }
 
