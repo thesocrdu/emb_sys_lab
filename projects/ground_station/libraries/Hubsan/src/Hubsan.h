@@ -52,7 +52,7 @@ class Hubsan {
         /**
          *
          */
-        int16_t get_channel(uint8_t ch, int32_t scale, int32_t center, int32_t range);
+        int16_t get_channel();
 
         /**
          *

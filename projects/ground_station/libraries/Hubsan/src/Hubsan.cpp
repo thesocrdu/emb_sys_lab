@@ -175,18 +175,14 @@ void Hubsan::hubsan_build_bind_packet(u8 state) {
 }
 
 
-int16_t Hubsan::get_channel(uint8_t ch, int32_t scale, int32_t center, int32_t range) {
-    static int a=0;
-    if (a++<2550) return 0;
+int16_t Hubsan::get_channel() {
 
-    //  return 254;
+    static int a=0;
+    if (a++<2550) {
+        return 0;
+    }
+
     return 128;
-    //int32_t value = (int32_t)Channels[ch] * scale / CHAN_MAX_VALUE + center;
-    //if (value < center - range)
-    //    value = center - range;
-    //if (value >= center + range)
-    //    value = center + range -1;
-    //return value;
 }
 
 
@@ -257,7 +253,10 @@ uint16_t Hubsan::hubsan_cb() {
        _a7105.readData(packet, 16);
         state++;
         if (state == BIND_5)
-            _a7105.setID((packet[2] << 24) | (packet[3] << 16) | (packet[4] << 8) | packet[5]);
+            _a7105.setID(static_cast<uint32_t>(packet[2]) << 24 |
+                    static_cast<uint32_t>(packet[3]) << 16 |
+                    static_cast<uint32_t>(packet[4]) << 8 |
+                    static_cast<uint32_t>(packet[5]));
         
         return 500;  //8msec elapsed time since last write;
     case BIND_8:
