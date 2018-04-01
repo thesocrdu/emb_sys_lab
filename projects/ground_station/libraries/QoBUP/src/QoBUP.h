@@ -125,15 +125,6 @@ class QoBUP {
         q_status_msg_t validateMessage(const uint8_t* const cmd);
 
         /**
-         * Traverses through the received (and already validated)
-         * message and populates the common data structures for
-         * command/control values which are stored in this class.
-         * @retval 0 On success.
-         * @retval -1 If validations was not performed on this message.
-         */
-        int parseMessage();
-
-        /**
          * Attempts to get a command message over serial, populating
          * it into the provided (pre-allocated) command buffer.
          * The function also performs an overall size validation
