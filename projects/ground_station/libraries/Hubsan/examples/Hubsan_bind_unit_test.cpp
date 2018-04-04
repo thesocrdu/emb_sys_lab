@@ -13,7 +13,7 @@ void setup(void) {
     hubs.init(CS_PIN);
 }
 
-extern volatile uint8_t throttle, rudder, aileron, elevator;
+extern volatile uint8_t throttle, rudder, aileron, elevator, flags;
 
 void loop(void) {
 
@@ -24,6 +24,15 @@ void loop(void) {
                 throttle = 0;
                 rudder = aileron = elevator = 0x80;
                 break;
+
+            case 's':
+                flags = 0x0A;
+                break;
+
+            case 'd':
+                flags = 0xE;
+                break;
+
             default:
                 throttle = (uint8_t) rand() % 0x30;
                 rudder = aileron = elevator = 0x80;

@@ -186,7 +186,7 @@ int16_t Hubsan::get_channel() {
 }
 
 
-volatile uint8_t throttle=0, rudder=0, aileron = 0, elevator = 0;
+volatile uint8_t throttle=0, rudder=0, aileron = 0, elevator = 0, flags = 0xe;
 
 void Hubsan::hubsan_build_packet() {
 
@@ -200,7 +200,7 @@ void Hubsan::hubsan_build_packet() {
     //packet[4] = 0x80; // get_channel(3, 0x80, 0x80, 0x80); //Rudder is reversed
     //packet[6] = 0x80; // get_channel(1, 0x80, 0x80, 0x80); //Elevator is reversed
     //packet[8] = 0x80; // get_channel(0, 0x80, 0x80, 0x80);
-    packet[9] = 0x0e;
+    packet[9] = flags;
     packet[10] = 0x19;
     //packet[11] = (txid >> 24) & 0xff;
     //packet[12] = (txid >> 16) & 0xff;
