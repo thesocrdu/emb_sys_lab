@@ -131,3 +131,8 @@ void Q_Hubsan::translateAllFlightControls(
     _currFlightCntls.pitch = flightStruct->pitch;
     _currFlightCntls.roll = flightStruct->roll;
 }
+
+void Q_Hubsan::getFlightControls(q_hubsan_flight_controls_t &fc) {
+
+    fc = _currFlightCntls;
+}

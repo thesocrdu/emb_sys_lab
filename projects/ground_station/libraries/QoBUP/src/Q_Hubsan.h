@@ -94,6 +94,12 @@ class Q_Hubsan : public QoBUP {
          */
         int parseMessage(const uint8_t* const cmd);
 
+        /**
+         * Gets the current flight contols struct.
+         * @param[in/out] The @sa q_hubsan_flight_controls_t to be populated
+         */
+        void getFlightControls(q_hubsan_flight_controls_t &fc);
+
     private:
 
         /** Hold the current flight controls. */

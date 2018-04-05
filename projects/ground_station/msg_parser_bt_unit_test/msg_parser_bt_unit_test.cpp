@@ -1,24 +1,30 @@
 #include <bt_smirf.h>
 #include <QoBUP.h>
+#include <Q_Hubsan.h>
+#include <SoftwareSerial.h>
 
-#define BT_SERIAL_IF Serial2
+#define BT_RX_PIN 4
+#define BT_TX_PIN 3
+#define BT_SERIAL_IF softSerial
 #define CMD_BUFF_SIZE 32
 
-static QoBUP qb;
+static Q_Hubsan qh;
+static SoftwareSerial BT_SERIAL_IF(BT_RX_PIN, BT_TX_PIN);
 static bt_smirf bt(BT_SERIAL_IF);
-q_status_msg_t status;
 
+q_status_msg_t status;
+q_hubsan_flight_controls_t flightControls;
 uint8_t cmd[CMD_BUFF_SIZE];
 
 void setup(void) {
     Serial.begin(115200);
     while(!Serial){}
 
-    bt.begin(115200);
-    bt.exitCmdMode();
-
     Serial.write(27);
     Serial.print("[2J");
+
+    bt.begin(9600);
+    bt.exitCmdMode();
 }
 
 
@@ -26,7 +32,7 @@ void loop(void) {
 
     /* Get new message from the bluetooth device and validate it */
     Serial.println("Waiting for Bluetooth data:");
-    status = qb.serialRxMsg(BT_SERIAL_IF, cmd, CMD_BUFF_SIZE);
+    status = qh.serialRxMsg(BT_SERIAL_IF, cmd, CMD_BUFF_SIZE);
 
     /* Print out the received command */
     Serial.println("Cmd received/parsed:");
@@ -34,6 +40,15 @@ void loop(void) {
 
     /* Print the resulting status of the message  */
     printStatus();
+
+    if (status.status.word == 0) {
+        /* Translate the message. */
+        qh.parseMessage(cmd);
+        qh.getFlightControls(flightControls);
+        printFlightControls();
+    } else {
+        Serial.println("Status non-zero. Not parsing.");
+    }
 
     /* Send response back to transmitter */
     sendStatusResp();
@@ -60,4 +75,12 @@ void printCmd() {
 void printStatus() {
     Serial.print("status = ");
     Serial.println(status.status.word, HEX);
+}
+
+void printFlightControls() {
+    uint8_t *ptr = reinterpret_cast<uint8_t*>(&flightControls);
+    Serial.println("Flight controls:");
+    for (unsigned int i = 0; i < sizeof(q_hubsan_flight_controls_t); i++) {
+        Serial.println(ptr[i], HEX);
+    }
 }
