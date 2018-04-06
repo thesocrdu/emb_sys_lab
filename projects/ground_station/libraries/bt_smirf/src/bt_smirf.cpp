@@ -22,7 +22,7 @@
 #define EXTINFO_CMD     "E"
 #define INQUIRY_CMD     "I"
 #define INQUIRYN_CMD    "IN"
-#define BAUD_CMD        "U,%lu,N"
+#define BAUD_CMD        "U,%s,N"
 #define SETNAME_CMD     "SN"
 #define REBOOT_CMD      "R,1"
 #define HELP_CMD        "H"
@@ -58,7 +58,7 @@ bt_smirf::bt_smirf(const uint8_t rx, const uint8_t tx) {
 
 bt_smirf::~bt_smirf() {}
 
-//#define ECHO_READ
+#define ECHO_READ
 const char* bt_smirf::getResponse() {
 
     size_t i;
@@ -74,7 +74,7 @@ const char* bt_smirf::getResponse() {
 #ifdef ECHO_READ
     size_t j;
     for(j = 0; j <= i; j++){
-        Serial.print(_cmdResp[j], DEC);
+        Serial.print(_cmdResp[j]);
         Serial.print(" ");
     }
     Serial.println();
@@ -115,8 +115,55 @@ void bt_smirf::begin(const long baud_rate) {
 
     if (baud_rate != BT_SMIFT_DEFAULT_BAUD) {
         char cmd[16];
-        snprintf(cmd, 16, BAUD_CMD, baud_rate);
+        const char *newBaud;
+
+        switch (baud_rate) {
+            case 1200:
+                newBaud = "1200";
+                break;
+            case 2400:
+                newBaud = "2400";
+                break;
+            case 4800:
+                newBaud = "4800";
+                break;
+            case 9600:
+                newBaud = "9600";
+                break;
+            case 19200:
+                newBaud = "19.2k";
+                break;
+            case 38400:
+                newBaud = "38.4K";
+                break;
+            case 57600:
+                newBaud = "57.6K";
+                break;
+            case 115200:
+                newBaud = "115K";
+                break;
+            case 230400:
+                newBaud = "230K";
+                break;
+            case 460800:
+                newBaud = "460K";
+                break;
+            case 921600:
+                newBaud = "921K";
+                break;
+
+            default:
+                /* Do something safe. */
+                newBaud = "9600";
+                break;
+
+        }
+
+        snprintf(cmd, 16, BAUD_CMD, newBaud);
         sendCmd(cmd);
+        getResponse();
+        _sw_serial->begin(baud_rate);
+        delay(100);
     }
 }
 
