@@ -155,6 +155,15 @@ void Hubsan::update_crc() {
     packet[15] = (256 - (sum % 256)) & 0xff;
 }
 
+void Hubsan::update_flight_control_crc() {
+
+    int sum = 0;
+    uint8_t *flt_cnt_ptr = reinterpret_cast<uint8_t *>(currFlightControls);
+    for(int i = 0; i < 15; i++)
+        sum += flt_cnt_ptr[i];
+    flt_cnt_ptr[15] = (256 - (sum % 256)) & 0xff;
+}
+
 void Hubsan::hubsan_build_bind_packet(u8 state) {
     packet[0] = state;
     packet[1] = channel;
@@ -211,6 +220,17 @@ void Hubsan::hubsan_build_packet() {
     packet[13] = 0x00;
     packet[14] = 0x00;
     update_crc();
+}
+
+void Hubsan::updateFlightControlPtr(q_hubsan_flight_controls_t* const newControls) {
+
+    currFlightControls = newControls;
+}
+
+void Hubsan::hubsan_send_data_packet(const uint8_t ch) {
+
+    update_flight_control_crc();
+    _a7105.writeData(packet, 16, ch);
 }
 
 uint16_t Hubsan::hubsan_cb() {
@@ -281,8 +301,10 @@ uint16_t Hubsan::hubsan_cb() {
     case DATA_3:
     case DATA_4:
     case DATA_5:
-        hubsan_build_packet();
-        _a7105.writeData(packet, 16, state == DATA_5 ? channel + 0x23 : channel);
+        hubsan_send_data_packet(state == DATA_5 ? channel + 0x23 : channel);
+        //hubsan_build_packet();
+        //_a7105.writeData(packet, 16, state == DATA_5 ? channel + 0x23 : channel);
+        //_a7105.writeData(packet, 16, channel);
         if (state == DATA_5)
             state = DATA_1;
         else

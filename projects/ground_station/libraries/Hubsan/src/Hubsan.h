@@ -15,6 +15,7 @@
 
 #include <A7105.h>
 #include <Arduino.h>
+#include <Q_Hubsan.h>
 #include <stdint.h>
 
 /**
@@ -64,6 +65,25 @@ class Hubsan {
          */
         uint16_t hubsan_cb();
 
+        /**
+         * Updates the internal pointer to the neweset
+         * set of controls available.
+         * @param[in] pointer to the new controls struct.
+         */
+        void updateFlightControlPtr(q_hubsan_flight_controls_t* const newControls);
+
+        /**
+         * Pushes updated controls to the @sa A7105
+         * interface for transmit to the Hubsan.
+         * @param[in] ch Channel override to send packet on.
+         */
+        void hubsan_send_data_packet(const uint8_t ch);
+
+        /**
+         * Updates the CRC field in the @sa currFlightControls.
+         */
+        void update_flight_control_crc();
+
         void txPacket(uint8_t *ppacket);
         void rxPacket(uint8_t *ppacket);
         void getChecksum(uint8_t *ppacket);
@@ -95,6 +115,9 @@ class Hubsan {
 
         /** Buffer used for all packet transmissions. */
         uint8_t packet[16];
+
+        /** Pointer to the current flight controls we are transmitting. */
+        q_hubsan_flight_controls_t *currFlightControls;
 
         /** The selected channel ID. Should be a value from @sa allowed_ch array. */
         uint8_t channel;
