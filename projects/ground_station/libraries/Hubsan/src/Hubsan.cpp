@@ -230,7 +230,7 @@ void Hubsan::updateFlightControlPtr(q_hubsan_flight_controls_t* const newControl
 void Hubsan::hubsan_send_data_packet(const uint8_t ch) {
 
     update_flight_control_crc();
-    _a7105.writeData(packet, 16, ch);
+    _a7105.writeData(reinterpret_cast<uint8_t *>(currFlightControls), sizeof(*currFlightControls), ch);
 }
 
 uint16_t Hubsan::hubsan_cb() {

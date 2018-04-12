@@ -29,7 +29,7 @@
 #define Q_MAX_SIZE_CMD_BYTES 32
 
 /** Timeout (in milliseconds) for receiving a command over serial. */
-#define Q_SERIAL_TIMEOUT_MS 10
+#define Q_SERIAL_TIMEOUT_MS 150
 
 /**
  * @defgroup QoBUP message constants.
