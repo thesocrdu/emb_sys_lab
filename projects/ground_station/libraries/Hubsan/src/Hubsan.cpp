@@ -28,7 +28,6 @@ Hubsan::Hubsan() {
 
     state = BIND_1;
     memset(packet, 0, sizeof(packet));
-    sessionid = rand();
     _channel = allowed_ch[0];
     //_channel = allowed_ch[rand() % sizeof(allowed_ch)];
 }
@@ -346,6 +345,154 @@ void Hubsan::hubsan_build_packet() {
 void Hubsan::updateFlightControlPtr(q_hubsan_flight_controls_t* const newControls) {
 
     currFlightControls = newControls;
+}
+
+void Hubsan::bind() {
+
+    Serial.println("Sending beacon packets...");
+    uint8_t status_byte = 0x00; // variable to hold W/R register data.
+    uint8_t *_sessionid = reinterpret_cast<uint8_t*>(&sessionid);
+
+
+    // Generate 4 byte random session id.
+    randomSeed(analogRead(0));
+    for (unsigned int i = 0; i < 4; i++){
+        _sessionid[i] = random(255);
+    }
+
+    for (unsigned int i = 0; i < 16; i++){ // Initialize packet array.
+        _txpacket[i] = 0x00;
+    }
+    _txpacket[0] = 0x01; // Bind level = 01 (Unbound - BEACON lvl 1 Packet)
+    _txpacket[1] = _channel; // Selected Channel
+    for (unsigned int i = 0; i < 4; i++){
+        _txpacket[i+2] = _sessionid[i];
+    }
+    getChecksum(_txpacket);
+
+    // Transmit ANNOUNCE Packet until a response is heard.
+    Serial.println("Announce Tx");
+    while (true){
+        _a7105.writeData(_txpacket, 16, _channel);
+        //printPacket("Announce packet", _txpacket);
+        _a7105.sendStrobe(A7105_RX); // Switch to RX mode.
+        bool response = false;
+        for (int i=0;i<15;i++){ // Listen to see if there was a response.
+            status_byte = _a7105.read(A7105_00_MODE);
+            if (bitRead(status_byte, 0) == false){
+                response = true;
+                Serial.println("Got response to ANNOUNCE");
+                break;
+            }
+            delay(1);
+        }
+        if (response){
+            break;
+        }
+        _a7105.sendStrobe(A7105_STANDBY);
+    }
+    _a7105.readData(_rxpacket, 16);
+    //printPacket("Announce Rx", _rxpacket);
+
+    // Escalate handshake.
+    _txpacket[0] = 0x03; // Bind Level = 01 (Unbound - BEACON lvl 3 Packet)
+    Serial.println("Escalating bind to Level 01, BEACON lvl 3");
+    getChecksum(_txpacket);
+    while (true){
+        _a7105.writeData(_txpacket, 16, _channel);
+        //printPacket("Escalation 1 Tx", _txpacket);
+        _a7105.sendStrobe(A7105_RX); // Switch to RX mode.
+        bool response = false;
+        for (unsigned int i = 0; i < 15; i++){ // Listen to see if there was a response.
+            status_byte = _a7105.read(A7105_00_MODE);
+            if (bitRead(status_byte, 0) == false){
+                response = true;
+                Serial.println("Got Response to BEACON lvl 3 packet");
+                break;
+            }
+            delay(1);
+        }
+        if (response){
+            break;
+        }
+        _a7105.sendStrobe(A7105_STANDBY);
+    }
+    _a7105.readData(_rxpacket, 16);
+    //printPacket("Escalation 1 Rx", _rxpacket);
+    delay(50);
+
+    // Set IDCode to the session value.
+    //_a7105.setID(0x12345678);
+    _a7105.setID(static_cast<uint32_t>(_rxpacket[2]) << 24 |
+            static_cast<uint32_t>(_rxpacket[3]) << 16 |
+            static_cast<uint32_t>(_rxpacket[4]) << 8 |
+            static_cast<uint32_t>(_rxpacket[5]));
+
+    // Commence confirmation handshake.
+    _txpacket[0] = 0x01; // Bind Level = 01 (Mid-Bind - Confirmation of IDCODE change packet)
+    Serial.println("Escalating to MidBind");
+    getChecksum(_txpacket);
+    while (true){
+        _a7105.writeData(_txpacket, 16, _channel);
+        //printPacket("MidBind Tx", _txpacket);
+        _a7105.sendStrobe(A7105_RX); // Switch to RX mode.
+        bool response = false;
+        for (unsigned int i = 0; i < 15; i++){ // Listen to see if there was a response.
+            status_byte = _a7105.read(A7105_00_MODE);
+            if (bitRead(status_byte, 0) == false){
+                response = true;
+                break;
+            }
+            delay(1);
+        }
+        if (response){
+            break;
+        }
+        _a7105.sendStrobe(A7105_STANDBY);
+    }
+    _a7105.readData(_rxpacket, 16);
+    //printPacket("MidBind Rx", _rxpacket);
+
+    // Commence full handshake escalation.
+    Serial.println("commencing full handshake");
+    _txpacket[0] = 0x09;
+    for (unsigned int i = 0; i < 10; i++){
+        _txpacket[2] = static_cast<uint8_t>(i);
+        getChecksum(_txpacket);
+        while (true){
+            _a7105.writeData(_txpacket, 16, _channel);
+            //printPacket("Full Handshake Tx", _txpacket);
+            _a7105.sendStrobe(A7105_RX); // Switch to RX mode.
+            bool response = false;
+            for (unsigned int j = 0; j < 15; j++){ // Listen to see if there was a response.
+                status_byte = _a7105.read(A7105_00_MODE);
+                if (bitRead(status_byte, 0) == false){
+                    response = true;
+                    break;
+                }
+                delay(1);
+            }
+            if (response){
+                break;
+            }
+            _a7105.sendStrobe(A7105_STANDBY);
+        }
+        _a7105.readData(_rxpacket, 16);
+        //printPacket("Full Handshake Rx", _rxpacket);
+
+    }
+    _a7105.write(A7105_1F_CODE_I, 0x0F); // Enable FEC.
+    _a7105.sendStrobe(A7105_STANDBY);
+    Serial.println("Binding finished");
+}
+
+void Hubsan::getChecksum(uint8_t *ppacket) {
+
+    int sum = 0;
+    for (int i=0;i<15;i++){
+        sum = sum + int(ppacket[i]);
+    }
+    ppacket[15] = byte(256-(sum % 256));
 }
 
 void Hubsan::hubsan_send_data_packet(const uint8_t ch) {

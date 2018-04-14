@@ -73,6 +73,11 @@ class Hubsan {
         void updateFlightControlPtr(q_hubsan_flight_controls_t* const newControls);
 
         /**
+         *
+         */
+        void bind();
+
+        /**
          * Pushes updated controls to the @sa A7105
          * interface for transmit to the Hubsan.
          * @param[in] ch Channel override to send packet on.
@@ -137,6 +142,12 @@ class Hubsan {
          * in reference code.
          */
         const static uint32_t txid = 0xdb042679;
+
+        /** Transmit packet used for binding. */
+        uint8_t _txpacket[16];
+
+        /** Receive packet used for binding. */
+        uint8_t _rxpacket[16];
 
 };
 #endif /* HUBSAN_H */
