@@ -1,13 +1,15 @@
 #include <Arduino.h>
 #include "bt_smirf.h"
 
-static bt_smirf bt(Serial2);
+static SoftwareSerial ss(4, 3);
+
+static bt_smirf bt(ss);
 void setup(void) {
     Serial.begin(115200);
     while(!Serial){}
     Serial.write(27);
     Serial.print("[2J");
-    bt.begin(115200);
+    bt.begin(9600);
     Serial.println("Toggling module into CMD mode...");
 
 //    bt.resetCmdQueue();
@@ -29,11 +31,11 @@ void loop(void) {
     uint8_t in;
     if (Serial.available()) {
         in = Serial.read();
-        //Serial.write(in);
-        Serial2.write(in);
+        Serial.write(in);
+        ss.write(in);
     }
-    if (Serial2.available()) {
-        in = Serial2.read();
+    if (ss.available()) {
+        in = ss.read();
         Serial.write(in);
     }
 }

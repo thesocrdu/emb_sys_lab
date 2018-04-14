@@ -29,7 +29,7 @@
 #define Q_MAX_SIZE_CMD_BYTES 32
 
 /** Timeout (in milliseconds) for receiving a command over serial. */
-#define Q_SERIAL_TIMEOUT_MS 10
+#define Q_SERIAL_TIMEOUT_MS 150
 
 /**
  * @defgroup QoBUP message constants.
@@ -123,15 +123,6 @@ class QoBUP {
          * @return The @sa q_status_msg_t for this validation.
          */
         q_status_msg_t validateMessage(const uint8_t* const cmd);
-
-        /**
-         * Traverses through the received (and already validated)
-         * message and populates the common data structures for
-         * command/control values which are stored in this class.
-         * @retval 0 On success.
-         * @retval -1 If validations was not performed on this message.
-         */
-        int parseMessage();
 
         /**
          * Attempts to get a command message over serial, populating

@@ -193,7 +193,6 @@ void A7105::writeData(const uint8_t* const dpbuffer,
     CS_HIGH();
 
     // set the channel
-    // REMOVE ME???
     write(0x0F, channel);
 
     CS_LOW();

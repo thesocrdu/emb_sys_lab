@@ -66,7 +66,7 @@ class bt_smirf {
          * @param baud_rate
          *     The desired bit rate for communication.
          *     Supported rates include: 
-         *     1200, 2400, 9600, 19200, 28800, 38400,
+         *     1200, 2400, 4800, 9600, 19200, 38400,
          *     57600, 115200, 230400, 460800, and 921600
          */
         void begin(const long baud_rate);

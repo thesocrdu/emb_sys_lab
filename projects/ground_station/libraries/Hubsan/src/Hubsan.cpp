@@ -155,6 +155,15 @@ void Hubsan::update_crc() {
     packet[15] = (256 - (sum % 256)) & 0xff;
 }
 
+void Hubsan::update_flight_control_crc() {
+
+    int sum = 0;
+    uint8_t *flt_cnt_ptr = reinterpret_cast<uint8_t *>(currFlightControls);
+    for(int i = 0; i < 15; i++)
+        sum += flt_cnt_ptr[i];
+    flt_cnt_ptr[15] = (256 - (sum % 256)) & 0xff;
+}
+
 void Hubsan::hubsan_build_bind_packet(u8 state) {
     packet[0] = state;
     packet[1] = channel;
@@ -175,22 +184,18 @@ void Hubsan::hubsan_build_bind_packet(u8 state) {
 }
 
 
-int16_t Hubsan::get_channel(uint8_t ch, int32_t scale, int32_t center, int32_t range) {
-    static int a=0;
-    if (a++<2550) return 0;
+int16_t Hubsan::get_channel() {
 
-    //  return 254;
+    static int a=0;
+    if (a++<2550) {
+        return 0;
+    }
+
     return 128;
-    //int32_t value = (int32_t)Channels[ch] * scale / CHAN_MAX_VALUE + center;
-    //if (value < center - range)
-    //    value = center - range;
-    //if (value >= center + range)
-    //    value = center + range -1;
-    //return value;
 }
 
 
-volatile uint8_t throttle=0, rudder=0, aileron = 0, elevator = 0;
+volatile uint8_t throttle=0, rudder=0, aileron = 0, elevator = 0, flags = 0xe;
 
 void Hubsan::hubsan_build_packet() {
 
@@ -204,7 +209,7 @@ void Hubsan::hubsan_build_packet() {
     //packet[4] = 0x80; // get_channel(3, 0x80, 0x80, 0x80); //Rudder is reversed
     //packet[6] = 0x80; // get_channel(1, 0x80, 0x80, 0x80); //Elevator is reversed
     //packet[8] = 0x80; // get_channel(0, 0x80, 0x80, 0x80);
-    packet[9] = 0x0e;
+    packet[9] = flags;
     packet[10] = 0x19;
     //packet[11] = (txid >> 24) & 0xff;
     //packet[12] = (txid >> 16) & 0xff;
@@ -215,6 +220,17 @@ void Hubsan::hubsan_build_packet() {
     packet[13] = 0x00;
     packet[14] = 0x00;
     update_crc();
+}
+
+void Hubsan::updateFlightControlPtr(q_hubsan_flight_controls_t* const newControls) {
+
+    currFlightControls = newControls;
+}
+
+void Hubsan::hubsan_send_data_packet(const uint8_t ch) {
+
+    update_flight_control_crc();
+    _a7105.writeData(reinterpret_cast<uint8_t *>(currFlightControls), sizeof(*currFlightControls), ch);
 }
 
 uint16_t Hubsan::hubsan_cb() {
@@ -257,7 +273,10 @@ uint16_t Hubsan::hubsan_cb() {
        _a7105.readData(packet, 16);
         state++;
         if (state == BIND_5)
-            _a7105.setID((packet[2] << 24) | (packet[3] << 16) | (packet[4] << 8) | packet[5]);
+            _a7105.setID(static_cast<uint32_t>(packet[2]) << 24 |
+                    static_cast<uint32_t>(packet[3]) << 16 |
+                    static_cast<uint32_t>(packet[4]) << 8 |
+                    static_cast<uint32_t>(packet[5]));
         
         return 500;  //8msec elapsed time since last write;
     case BIND_8:
@@ -282,8 +301,10 @@ uint16_t Hubsan::hubsan_cb() {
     case DATA_3:
     case DATA_4:
     case DATA_5:
-        hubsan_build_packet();
-        _a7105.writeData(packet, 16, state == DATA_5 ? channel + 0x23 : channel);
+        hubsan_send_data_packet(state == DATA_5 ? channel + 0x23 : channel);
+        //hubsan_build_packet();
+        //_a7105.writeData(packet, 16, state == DATA_5 ? channel + 0x23 : channel);
+        //_a7105.writeData(packet, 16, channel);
         if (state == DATA_5)
             state = DATA_1;
         else
