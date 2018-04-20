@@ -32,10 +32,11 @@ void setup(void) {
     /* Initialize the Hubsan interface. */
     hubs.init(CS_PIN);
 
-    printFltControls();
+    //printFltControls();
     qh.getFlightControls(fltCnt);
     hubs.updateFlightControlPtr(&fltCnt);
-    printFltControls();
+    //printFltControls();
+    hubs.bind();
 }
 
 void loop(void) {
@@ -56,8 +57,10 @@ void loop(void) {
         }
     }
 
-    uint16_t hubsanWait = hubs.hubsan_cb();
-    delayMicroseconds(hubsanWait - 400);
+    //uint16_t hubsanWait = hubs.hubsan_cb();
+    //delayMicroseconds(hubsanWait - 400);
+    hubs.hubsan_send_data_packet(0);
+    delay(10);
     
 }
 

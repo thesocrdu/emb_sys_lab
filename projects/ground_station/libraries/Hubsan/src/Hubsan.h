@@ -73,6 +73,11 @@ class Hubsan {
         void updateFlightControlPtr(q_hubsan_flight_controls_t* const newControls);
 
         /**
+         *
+         */
+        void bind();
+
+        /**
          * Pushes updated controls to the @sa A7105
          * interface for transmit to the Hubsan.
          * @param[in] ch Channel override to send packet on.
@@ -120,10 +125,13 @@ class Hubsan {
         q_hubsan_flight_controls_t *currFlightControls;
 
         /** The selected channel ID. Should be a value from @sa allowed_ch array. */
-        uint8_t channel;
+        uint8_t _channel;
+
+/** Length of the @sa allowed_ch array. */
+#define HUBSAN_CHAN_ARR_LEN 12
 
         /** Available channel IDs for the Hubsan. */
-        const static uint8_t allowed_ch[];
+        const static uint8_t allowed_ch[HUBSAN_CHAN_ARR_LEN];
 
         /** Session ID for this tranmission session. Randomly generated. */
         uint32_t sessionid;
@@ -134,6 +142,12 @@ class Hubsan {
          * in reference code.
          */
         const static uint32_t txid = 0xdb042679;
+
+        /** Transmit packet used for binding. */
+        uint8_t _txpacket[16];
+
+        /** Receive packet used for binding. */
+        uint8_t _rxpacket[16];
 
 };
 #endif /* HUBSAN_H */

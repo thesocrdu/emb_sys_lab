@@ -186,6 +186,9 @@ void A7105::writeData(const uint8_t* const dpbuffer,
 
     CS_LOW();
     SPI.transfer(A7105_RST_WRPTR);    //reset write FIFO PTR
+    CS_HIGH();
+
+    CS_LOW();
     SPI.transfer(A7105_05_FIFO_DATA); // FIFO DATA register - about to send data to put into FIFO
     for (unsigned int i = 0; i < len; i++) {
         SPI.transfer(dpbuffer[i]); // send some data
@@ -193,11 +196,18 @@ void A7105::writeData(const uint8_t* const dpbuffer,
     CS_HIGH();
 
     // set the channel
-    write(0x0F, channel);
+    //write(0x0F, channel);
 
     CS_LOW();
     SPI.transfer(A7105_TX); // strobe command to actually transmit the daat
     CS_HIGH();
+
+    while (true){ // Check to see if the transmission has completed.
+        uint8_t modeData = read(A7105_00_MODE);
+        if (bitRead(modeData, 0) == 0){
+            break;
+        }
+    }
 }
 
 void A7105::readData(uint8_t* const dpbuffer, const uint8_t len) {
