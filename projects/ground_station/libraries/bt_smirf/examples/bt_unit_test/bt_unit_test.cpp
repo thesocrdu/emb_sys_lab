@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "bt_smirf.h"
 
-static SoftwareSerial ss(4, 3);
+static SoftwareSerial ss(3, 4);
 
 static bt_smirf bt(ss);
 void setup(void) {

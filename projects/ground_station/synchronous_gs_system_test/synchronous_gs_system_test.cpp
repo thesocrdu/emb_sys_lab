@@ -3,8 +3,8 @@
 #include <Q_Hubsan.h>
 #include <SoftwareSerial.h>
 
-#define BT_RX_PIN 4
-#define BT_TX_PIN 3
+#define BT_RX_PIN 3
+#define BT_TX_PIN 4
 #define BT_SERIAL_IF softSerial
 #define CMD_BUFF_SIZE 32
 #define CS_PIN 9
