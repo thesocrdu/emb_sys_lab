@@ -58,7 +58,6 @@ bt_smirf::bt_smirf(const uint8_t rx, const uint8_t tx) {
 
 bt_smirf::~bt_smirf() {}
 
-#define ECHO_READ
 const char* bt_smirf::getResponse() {
 
     size_t i;
@@ -71,7 +70,7 @@ const char* bt_smirf::getResponse() {
     }
     _cmdResp[i] = '\0';
 
-#ifdef ECHO_READ
+#ifdef GS_DEBUG
     size_t j;
     for(j = 0; j <= i; j++){
         Serial.print(_cmdResp[j]);
