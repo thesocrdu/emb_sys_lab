@@ -10,17 +10,29 @@
 #include <bt_smirf.h>
 #include <Hubsan.h>
 #include <Q_Hubsan.h>
-#include <SoftwareSerial.h>
-#include <TimerOne.h>
 
+
+#ifdef GS_DEBUG
+
+#include <SoftwareSerial.h>
 #define BT_RX_PIN 3
 #define BT_TX_PIN 4
 #define BT_SERIAL_IF softSerial
+#define BT_BAUD 9600
+static SoftwareSerial BT_SERIAL_IF(BT_RX_PIN, BT_TX_PIN);
+
+#else
+
+#include <TimerOne.h>
+#define BT_SERIAL_IF Serial
+#define BT_BAUD 115200
+
+#endif
+
 #define CMD_BUFF_SIZE 32
 #define CS_PIN 9
 #define HUBSAN_TX_PERIOD_US 10000
 
-static SoftwareSerial BT_SERIAL_IF(BT_RX_PIN, BT_TX_PIN);
 static bt_smirf bt(BT_SERIAL_IF);
 static Q_Hubsan qh;
 static Hubsan hubs;
@@ -30,7 +42,7 @@ q_hubsan_flight_controls_t fltCnt;
 q_status_msg_t status;
 unsigned long txTimestamp = 0;
 
-void controlUpdateISR() {
+void hubsanControlUpdate() {
 
     hubs.hubsan_send_data_packet(0);
 }
@@ -48,7 +60,7 @@ void initSerialDebug(void) {
 
 void initBluetoothInterface(void) {
 
-    bt.begin(9600);
+    bt.begin(BT_BAUD);
     bt.exitCmdMode();
 }
 
@@ -61,10 +73,19 @@ void initHubsanInterface(void) {
     hubs.bind();
 }
 
-void initTimerInterrupt() {
+void initTimer() {
 
-    Timer1.initialize(10000);
-    Timer1.attachInterrupt(controlUpdateISR, 10000);
+#ifdef GS_DEBUG
+    txTimestamp = micros();
+#else
+    Timer1.initialize(HUBSAN_TX_PERIOD_US);
+    Timer1.attachInterrupt(hubsanControlUpdate, HUBSAN_TX_PERIOD_US);
+#endif
+}
+
+void sendStatusResp() {
+    BT_SERIAL_IF.write(status.sid);
+    BT_SERIAL_IF.write(status.status.word);
 }
 
 void setup(void) {
@@ -72,9 +93,7 @@ void setup(void) {
     initSerialDebug();
     initBluetoothInterface();
     initHubsanInterface();
-
-    //initTimerInterrupt();
-    txTimestamp = micros();
+    initTimer();
 }
 
 void loop(void) {
@@ -96,11 +115,16 @@ void loop(void) {
             hubs.updateFlightControlPtr(&fltCnt);
             //printFltControls();
         }
+        sendStatusResp();
     }
 
+#ifdef GS_DEBUG
+    /*
+     * In a non-debug configuration this
+     * will be handled by the timer interrupt
+     */
     while(txTimestamp - micros() < HUBSAN_TX_PERIOD_US);
     txTimestamp = micros();
-    //if (txTimestamp - micros() >= HUBSAN_TX_PERIOD_US) {
-        hubs.hubsan_send_data_packet(0);
-    //}
+    hubsanControlUpdate();
+#endif
 }
