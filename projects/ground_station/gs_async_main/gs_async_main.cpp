@@ -23,9 +23,8 @@ static SoftwareSerial BT_SERIAL_IF(BT_RX_PIN, BT_TX_PIN);
 
 #else
 
-#include <TimerOne.h>
 #define BT_SERIAL_IF Serial
-#define BT_BAUD 115200
+#define BT_BAUD 57600
 
 #endif
 
@@ -75,12 +74,7 @@ void initHubsanInterface(void) {
 
 void initTimer() {
 
-#ifdef GS_DEBUG
     txTimestamp = micros();
-#else
-    Timer1.initialize(HUBSAN_TX_PERIOD_US);
-    Timer1.attachInterrupt(hubsanControlUpdate, HUBSAN_TX_PERIOD_US);
-#endif
 }
 
 void sendStatusResp() {
@@ -118,13 +112,11 @@ void loop(void) {
         sendStatusResp();
     }
 
-#ifdef GS_DEBUG
     /*
-     * In a non-debug configuration this
-     * will be handled by the timer interrupt
+     * Wait 10ms since last update to send
+     * new controls to Hubsan quadcopter.
      */
     while(txTimestamp - micros() < HUBSAN_TX_PERIOD_US);
     txTimestamp = micros();
     hubsanControlUpdate();
-#endif
 }
