@@ -31,6 +31,7 @@ static SoftwareSerial BT_SERIAL_IF(BT_RX_PIN, BT_TX_PIN);
 #define CMD_BUFF_SIZE 32
 #define CS_PIN 9
 #define HUBSAN_TX_PERIOD_US 10000
+#define BIND_LED_PIN 2
 
 static bt_smirf bt(BT_SERIAL_IF);
 static Q_Hubsan qh;
@@ -65,11 +66,28 @@ void initBluetoothInterface(void) {
 
 void initHubsanInterface(void) {
 
+    pinMode(BIND_LED_PIN, OUTPUT);
+    digitalWrite(BIND_LED_PIN, LOW);
     hubs.init(CS_PIN);
 
     qh.getFlightControls(fltCnt);
     hubs.updateFlightControlPtr(&fltCnt);
     hubs.bind();
+
+    /* Toggle Bind LED to let user know we're ready. */
+    digitalWrite(BIND_LED_PIN, HIGH);
+    delay(200);
+    digitalWrite(BIND_LED_PIN, LOW);
+    delay(200);
+    digitalWrite(BIND_LED_PIN, HIGH);
+    delay(200);
+    digitalWrite(BIND_LED_PIN, LOW);
+    delay(200);
+    digitalWrite(BIND_LED_PIN, HIGH);
+    delay(200);
+    digitalWrite(BIND_LED_PIN, LOW);
+    delay(200);
+    digitalWrite(BIND_LED_PIN, HIGH);
 }
 
 void initTimer() {
