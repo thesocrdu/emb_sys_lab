@@ -33,8 +33,8 @@ static SoftwareSerial BT_SERIAL_IF(BT_RX_PIN, BT_TX_PIN);
 #define HUBSAN_TX_PERIOD_US 10000
 
 #define BIND_LED_PIN 2
-#define TRAINING_LED_PIN A0
-#define TRAINING_BUT_PIN A1
+#define TRAINING_LED_PIN 5
+#define TRAINING_BUT_PIN 8
 #define A7105_TX_EN_PIN A2
 
 static bt_smirf bt(BT_SERIAL_IF);
