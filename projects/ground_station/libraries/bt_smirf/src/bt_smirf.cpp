@@ -58,7 +58,6 @@ bt_smirf::bt_smirf(const uint8_t rx, const uint8_t tx) {
 
 bt_smirf::~bt_smirf() {}
 
-#define ECHO_READ
 const char* bt_smirf::getResponse() {
 
     size_t i;
@@ -71,13 +70,11 @@ const char* bt_smirf::getResponse() {
     }
     _cmdResp[i] = '\0';
 
-#ifdef ECHO_READ
+#ifdef GS_DEBUG
     size_t j;
     for(j = 0; j <= i; j++){
         Serial.print(_cmdResp[j]);
-        Serial.print(" ");
     }
-    Serial.println();
 #endif
 
     return _cmdResp;
@@ -131,13 +128,13 @@ void bt_smirf::begin(const long baud_rate) {
                 newBaud = "9600";
                 break;
             case 19200:
-                newBaud = "19.2k";
+                newBaud = "19.K";
                 break;
             case 38400:
-                newBaud = "38.4K";
+                newBaud = "38.K";
                 break;
             case 57600:
-                newBaud = "57.6K";
+                newBaud = "57.K";
                 break;
             case 115200:
                 newBaud = "115K";
@@ -162,8 +159,22 @@ void bt_smirf::begin(const long baud_rate) {
         snprintf(cmd, 16, BAUD_CMD, newBaud);
         sendCmd(cmd);
         getResponse();
-        _sw_serial->begin(baud_rate);
+
+        if (_sw_serial) {
+            _sw_serial->begin(baud_rate);
+            while(!*_sw_serial);
+        } else if (_hw_serial) {
+            _hw_serial->begin(baud_rate);
+            while(!*_hw_serial);
+        }
         delay(100);
+        /*
+         * According to the AT command reference
+         * setting a new baud rate will cause the
+         * device to immediately exit cmd mode.
+         * So let's put it back into cmd mode.
+         */
+        enterCmdMode();
     }
 }
 

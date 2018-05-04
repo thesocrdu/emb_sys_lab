@@ -152,7 +152,9 @@ int Hubsan::init(const unsigned int cspin) {
     int timeout; // var to hold timeout watchdog counter.
 
     // IF Filter Bank Calibration START.
+#ifdef GS_DEBUG
     Serial.println("Performing IF Filter Bank Calibration Test.");
+#endif
     timeout = 0;
     _a7105.sendStrobe(A7105_PLL); // Strobe - STANDBY.
     _a7105.write(A7105_02_CALIB_CONT, 0x01); // Set Calibration Control Reg (x02) - IF Filter Bank calibration enable.
@@ -162,22 +164,30 @@ int Hubsan::init(const unsigned int cspin) {
             break;
         }
         if (timeout > 100){ // Allow 100 iterations before signalling a failure.
+#ifdef GS_DEBUG
             Serial.println("ERROR: IF Filter Bank Calibration Test FAILED - (timeout).");
+#endif
         }
         timeout++;
         delayMicroseconds(20);
     }
     test_result = _a7105.read(A7105_22_IF_CALIB_I);
     if (bitRead(test_result,4)){
+#ifdef GS_DEBUG
         Serial.println("ERROR: IF Filter Bank Calibration Test FAILED - FBCF Flag: " + String(test_result));
+#endif
     } else {
+#ifdef GS_DEBUG
         Serial.println(" - Passed.");
+#endif
     }
     _a7105.write(A7105_22_IF_CALIB_I, 0x13); //Set IF Calibration Register - Configure relative control calibration.
     _a7105.write(A7105_23_IF_CALIB_II, 0x3B); // Set IF Calibration Register 2 - as above.
 
     // VCO Bank Calibration - TEST 1: START
+#ifdef GS_DEBUG
     Serial.println("Performing VCO Bank Calibration - Test 1");
+#endif
     timeout = 0;
     _a7105.write(A7105_0F_PLL_I, 0x00); // Set PLL Register 1 - Reset.
     _a7105.sendStrobe(A7105_PLL); // Strobe - PLL Mode.
@@ -188,21 +198,29 @@ int Hubsan::init(const unsigned int cspin) {
             break;
         }
         if (timeout > 10){ // Allow 10 iterations before signalling a failure.
+#ifdef GS_DEBUG
             Serial.println("ERROR: VCO Bank Calibration Test FAILED - (timeout).");
+#endif
         }
         timeout++;
         delayMicroseconds(20);
     }
     test_result = _a7105.read(A7105_25_VCO_SB_CAL_I);
     if (bitRead(test_result,3)){
+#ifdef GS_DEBUG
         Serial.println("ERROR: VCO Bank Calibration Test FAILED - VBCF Flag: " + String(test_result));
+#endif
     } else {
+#ifdef GS_DEBUG
         Serial.println(" - Passed.");
+#endif
     }
     _a7105.write(A7105_0F_PLL_I, 0x78); // Set PLL Register 1 - Select Channel Offset.
 
     // VCO Bank Calibration - TEST 2: START
+#ifdef GS_DEBUG
     Serial.println("Performing VCO Bank Calibration - Test 2");
+#endif
     timeout = 0;
     _a7105.sendStrobe(A7105_PLL); // Strobe - PLL Mode.
     _a7105.write(A7105_02_CALIB_CONT, 0x02); // Set Calibration Control Reg - VCO Bank Calibration enable.
@@ -212,16 +230,22 @@ int Hubsan::init(const unsigned int cspin) {
             break;
         }
         if (timeout > 10){ // Allow 10 iterations before signalling a failure.
+#ifdef GS_DEBUG
             Serial.println("ERROR: VCO Bank Calibration Test FAILED - (timeout).");
+#endif
         }
         timeout++;
         delayMicroseconds(20);
     }
     test_result = _a7105.read(A7105_25_VCO_SB_CAL_I);
     if (bitRead(test_result,3)){
+#ifdef GS_DEBUG
         Serial.println("ERROR: VCO Bank Calibration Test FAILED - VBCF Flag: " + String(test_result));
+#endif
     } else {
+#ifdef GS_DEBUG
         Serial.println(" - Passed.");
+#endif
     }
     _a7105.write(A7105_25_VCO_SB_CAL_I, 0x0B); // Set VCO Single band Calibration Register 1 - Manual Calibration settings.
 
@@ -237,7 +261,9 @@ int Hubsan::init(const unsigned int cspin) {
     _a7105.write(A7105_1E_ADC, 0xC3); // Set ADC Control Register (x1E) - RSSI Margin: 20, RSSI Measurement continue, FSARS: 4 MHZ, XADS = Convert RSS, RSSI measurement selected, RSSI continuous mode.
 
     // Cycle through the 12 channels and identify the best one to use.
+#ifdef GS_DEBUG
     Serial.println("Scanning Channel RSSI values:");
+#endif
     long chan_rssi[HUBSAN_CHAN_ARR_LEN] = {0,0,0,0,0,0,0,0,0,0,0,0};
     for (unsigned int i = 0; i < HUBSAN_CHAN_ARR_LEN; i++){
         const unsigned int num_samples = 15;
@@ -257,7 +283,9 @@ int Hubsan::init(const unsigned int cspin) {
             _channel = allowed_ch[i];
         }
     }
+#ifdef GS_DEBUG
     Serial.println(" - Selected Channel: 0x" + String(_channel,HEX));
+#endif
     _a7105.write(A7105_28_TX_TEST, 0x1F); // Set TX test Register - TX output: -4.8dBm, current: 14.9mA.
     _a7105.write(A7105_19_RX_GAIN_I, 0x9B); // Set RX Gain register - Manual, Mixer gain: 6dB, LNA gain: 6dB
     _a7105.write(A7105_0F_PLL_I, _channel); // Set PLL Register 1 - Select Channel Offset to channel with the HIGHEST average RSSI from the scanning
@@ -349,7 +377,9 @@ void Hubsan::updateFlightControlPtr(q_hubsan_flight_controls_t* const newControl
 
 void Hubsan::bind() {
 
+#ifdef GS_DEBUG
     Serial.println("Sending beacon packets...");
+#endif
     uint8_t status_byte = 0x00; // variable to hold W/R register data.
     uint8_t *_sessionid = reinterpret_cast<uint8_t*>(&sessionid);
 
@@ -371,7 +401,9 @@ void Hubsan::bind() {
     getChecksum(_txpacket);
 
     // Transmit ANNOUNCE Packet until a response is heard.
+#ifdef GS_DEBUG
     Serial.println("Announce Tx");
+#endif
     while (true){
         _a7105.writeData(_txpacket, 16, _channel);
         //printPacket("Announce packet", _txpacket);
@@ -381,7 +413,9 @@ void Hubsan::bind() {
             status_byte = _a7105.read(A7105_00_MODE);
             if (bitRead(status_byte, 0) == false){
                 response = true;
+#ifdef GS_DEBUG
                 Serial.println("Got response to ANNOUNCE");
+#endif
                 break;
             }
             delay(1);
@@ -396,7 +430,9 @@ void Hubsan::bind() {
 
     // Escalate handshake.
     _txpacket[0] = 0x03; // Bind Level = 01 (Unbound - BEACON lvl 3 Packet)
+#ifdef GS_DEBUG
     Serial.println("Escalating bind to Level 01, BEACON lvl 3");
+#endif
     getChecksum(_txpacket);
     while (true){
         _a7105.writeData(_txpacket, 16, _channel);
@@ -407,7 +443,9 @@ void Hubsan::bind() {
             status_byte = _a7105.read(A7105_00_MODE);
             if (bitRead(status_byte, 0) == false){
                 response = true;
+#ifdef GS_DEBUG
                 Serial.println("Got Response to BEACON lvl 3 packet");
+#endif
                 break;
             }
             delay(1);
@@ -430,7 +468,9 @@ void Hubsan::bind() {
 
     // Commence confirmation handshake.
     _txpacket[0] = 0x01; // Bind Level = 01 (Mid-Bind - Confirmation of IDCODE change packet)
+#ifdef GS_DEBUG
     Serial.println("Escalating to MidBind");
+#endif
     getChecksum(_txpacket);
     while (true){
         _a7105.writeData(_txpacket, 16, _channel);
@@ -454,7 +494,9 @@ void Hubsan::bind() {
     //printPacket("MidBind Rx", _rxpacket);
 
     // Commence full handshake escalation.
+#ifdef GS_DEBUG
     Serial.println("commencing full handshake");
+#endif
     _txpacket[0] = 0x09;
     for (unsigned int i = 0; i < 10; i++){
         _txpacket[2] = static_cast<uint8_t>(i);
@@ -483,7 +525,9 @@ void Hubsan::bind() {
     }
     _a7105.write(A7105_1F_CODE_I, 0x0F); // Enable FEC.
     _a7105.sendStrobe(A7105_STANDBY);
+#ifdef GS_DEBUG
     Serial.println("Binding finished");
+#endif
 }
 
 void Hubsan::getChecksum(uint8_t *ppacket) {
@@ -522,8 +566,11 @@ uint16_t Hubsan::hubsan_cb() {
           if(! (_a7105.read(A7105_00_MODE) & 0x01))
             break;
         }
-        if (i == 20)
+        if (i == 20) {
+#ifdef GS_DEBUG
             Serial.println("Failed to complete write\n");
+#endif
+        }
        // else 
        //     Serial.println("Completed write\n");
         _a7105.sendStrobe(A7105_RX);
