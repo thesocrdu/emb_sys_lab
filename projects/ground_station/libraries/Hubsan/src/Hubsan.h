@@ -41,31 +41,6 @@ class Hubsan {
         int init(const unsigned int cspin);
 
         /**
-         *
-         */
-        void update_crc();
-
-        /**
-         *
-         */
-        void hubsan_build_bind_packet(uint8_t state);
-
-        /**
-         *
-         */
-        int16_t get_channel();
-
-        /**
-         *
-         */
-        void hubsan_build_packet();
-
-        /**
-         *
-         */
-        uint16_t hubsan_cb();
-
-        /**
          * Updates the internal pointer to the neweset
          * set of controls available.
          * @param[in] pointer to the new controls struct.
@@ -89,34 +64,12 @@ class Hubsan {
          */
         void update_flight_control_crc();
 
-        void txPacket(uint8_t *ppacket);
-        void rxPacket(uint8_t *ppacket);
         void getChecksum(uint8_t *ppacket);
 
     private:
 
         /** The @sa A7105 interface for this Hubsan object. */
         A7105 _a7105;
-
-        /** Internal Hubsan bind stages. */
-        enum {
-            BIND_1,
-            BIND_2,
-            BIND_3,
-            BIND_4,
-            BIND_5,
-            BIND_6,
-            BIND_7,
-            BIND_8,
-            DATA_1,
-            DATA_2,
-            DATA_3,
-            DATA_4,
-            DATA_5,
-        };
-
-        /** Current bind state for this @sa Hubsan. */
-        uint8_t state;
 
         /** Buffer used for all packet transmissions. */
         uint8_t packet[16];
