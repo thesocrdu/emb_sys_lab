@@ -48,6 +48,10 @@ class Hubsan {
         void updateFlightControlPtr(q_hubsan_flight_controls_t* const newControls);
 
         /**
+         * Initiates the binding procedure for the Hubsan
+         *
+         * @note Refer to the protocol spec published by Jim Hung
+         *       http://www.jimhung.co.uk/wp-content/uploads/2014/11/HubsanX4_ProtocolSpec_v1.txt
          *
          */
         void bind();
@@ -59,14 +63,20 @@ class Hubsan {
          */
         void hubsan_send_data_packet(const uint8_t ch);
 
+
+    private:
+
         /**
          * Updates the CRC field in the @sa currFlightControls.
          */
         void update_flight_control_crc();
 
+        /**
+         * Updates the last element byte of the passed array
+         * with the CRC checksum. Used during the binding phase.
+         * @param[in] ppacket The byte packet of size 16
+         */
         void getChecksum(uint8_t *ppacket);
-
-    private:
 
         /** The @sa A7105 interface for this Hubsan object. */
         A7105 _a7105;
