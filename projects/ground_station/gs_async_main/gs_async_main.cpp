@@ -146,6 +146,7 @@ void handleTrainingButtonEvent() {
     }
     // set the LED:
     digitalWrite(TRAINING_LED_PIN, ledState);
+    hubs.setLedState(ledState);
 
     // save the reading. Next time through the loop, it'll be the lastButtonState:
     lastButtonState = reading;

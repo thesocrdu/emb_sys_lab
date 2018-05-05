@@ -470,3 +470,8 @@ void Hubsan::hubsan_send_data_packet(const uint8_t ch) {
     update_flight_control_crc();
     _a7105.writeData(reinterpret_cast<uint8_t *>(currFlightControls), sizeof(*currFlightControls), ch);
 }
+
+void Hubsan::setLedState(const bool on) {
+
+   currFlightControls->flags.ledOn = on;
+}

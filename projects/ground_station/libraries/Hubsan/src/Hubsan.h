@@ -63,6 +63,11 @@ class Hubsan {
          */
         void hubsan_send_data_packet(const uint8_t ch);
 
+        /**
+         * Set the LEDS on the Hubsan
+         * @param[in] on Set @sa true to turn LEDs on
+         */
+        void setLedState(const bool on);
 
     private:
 
