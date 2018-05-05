@@ -59,9 +59,8 @@ class Hubsan {
         /**
          * Pushes updated controls to the @sa A7105
          * interface for transmit to the Hubsan.
-         * @param[in] ch Channel override to send packet on.
          */
-        void hubsan_send_data_packet(const uint8_t ch);
+        void hubsan_send_data_packet();
 
         /**
          * Set the LEDS on the Hubsan

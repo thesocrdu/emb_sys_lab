@@ -331,7 +331,7 @@ void Hubsan::bind() {
     Serial.println("Announce Tx");
 #endif
     while (true){
-        _a7105.writeData(_txpacket, 16, _channel);
+        _a7105.writeData(_txpacket, 16);
         //printPacket("Announce packet", _txpacket);
         _a7105.sendStrobe(A7105_RX); // Switch to RX mode.
         bool response = false;
@@ -361,7 +361,7 @@ void Hubsan::bind() {
 #endif
     getChecksum(_txpacket);
     while (true){
-        _a7105.writeData(_txpacket, 16, _channel);
+        _a7105.writeData(_txpacket, 16);
         //printPacket("Escalation 1 Tx", _txpacket);
         _a7105.sendStrobe(A7105_RX); // Switch to RX mode.
         bool response = false;
@@ -399,7 +399,7 @@ void Hubsan::bind() {
 #endif
     getChecksum(_txpacket);
     while (true){
-        _a7105.writeData(_txpacket, 16, _channel);
+        _a7105.writeData(_txpacket, 16);
         //printPacket("MidBind Tx", _txpacket);
         _a7105.sendStrobe(A7105_RX); // Switch to RX mode.
         bool response = false;
@@ -428,7 +428,7 @@ void Hubsan::bind() {
         _txpacket[2] = static_cast<uint8_t>(i);
         getChecksum(_txpacket);
         while (true){
-            _a7105.writeData(_txpacket, 16, _channel);
+            _a7105.writeData(_txpacket, 16);
             //printPacket("Full Handshake Tx", _txpacket);
             _a7105.sendStrobe(A7105_RX); // Switch to RX mode.
             bool response = false;
@@ -465,10 +465,10 @@ void Hubsan::getChecksum(uint8_t *ppacket) {
     ppacket[15] = byte(256-(sum % 256));
 }
 
-void Hubsan::hubsan_send_data_packet(const uint8_t ch) {
+void Hubsan::hubsan_send_data_packet() {
 
     update_flight_control_crc();
-    _a7105.writeData(reinterpret_cast<uint8_t *>(currFlightControls), sizeof(*currFlightControls), ch);
+    _a7105.writeData(reinterpret_cast<uint8_t *>(currFlightControls), sizeof(*currFlightControls));
 }
 
 void Hubsan::setLedState(const bool on) {

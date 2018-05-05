@@ -49,7 +49,7 @@ bool trainingEnabled = false;
 
 void hubsanControlUpdate() {
 
-    hubs.hubsan_send_data_packet(0);
+    hubs.hubsan_send_data_packet();
 }
 
 void initSerialDebug(void) {

@@ -180,9 +180,7 @@ void A7105::setPower(TxPower power) {
     write(A7105_28_TX_TEST, (pac << 3) | tbg);
 }
 
-void A7105::writeData(const uint8_t* const dpbuffer,
-        const uint8_t len,
-        const uint8_t channel) {
+void A7105::writeData(const uint8_t* const dpbuffer, const uint8_t len) {
 
     CS_LOW();
     SPI.transfer(A7105_RST_WRPTR);    //reset write FIFO PTR
@@ -194,9 +192,6 @@ void A7105::writeData(const uint8_t* const dpbuffer,
         SPI.transfer(dpbuffer[i]); // send some data
     }
     CS_HIGH();
-
-    // set the channel
-    //write(0x0F, channel);
 
     CS_LOW();
     SPI.transfer(A7105_TX); // strobe command to actually transmit the daat

@@ -167,11 +167,8 @@ class A7105 {
          * Writes the provided data buffer to the A7105.
          * @param[in] dpbuffer The buffer of data to send.
          * @param[in] len The length of the buffer in bytes.
-         * @param[in] channel The (unused?) channel ID.
          */
-        void writeData(const uint8_t* const dpbuffer,
-                const uint8_t len,
-                const uint8_t channel);
+        void writeData(const uint8_t* const dpbuffer, const uint8_t len);
 
         /**
          * Reads data from the A7105 into the user provided buffer.
