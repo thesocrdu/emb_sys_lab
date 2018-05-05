@@ -35,6 +35,7 @@ static SoftwareSerial BT_SERIAL_IF(BT_RX_PIN, BT_TX_PIN);
 #define BIND_LED_PIN 2
 #define TRAINING_LED_PIN 5
 #define TRAINING_BUT_PIN 8
+#define A7105_RX_EN_PIN A1
 #define A7105_TX_EN_PIN A2
 
 static bt_smirf bt(BT_SERIAL_IF);
@@ -73,14 +74,15 @@ void initHubsanInterface(void) {
 
     pinMode(BIND_LED_PIN, OUTPUT);
     digitalWrite(BIND_LED_PIN, LOW);
-    hubs.init(CS_PIN);
+
+    hubs.init(A7105_RX_EN_PIN, A7105_TX_EN_PIN, CS_PIN);
 
     qh.getFlightControls(fltCnt);
     hubs.updateFlightControlPtr(&fltCnt);
     hubs.bind();
 
-    pinMode(A7105_TX_EN_PIN, OUTPUT);
-    digitalWrite(A7105_TX_EN_PIN, HIGH);
+    //pinMode(A7105_TX_EN_PIN, OUTPUT);
+    //digitalWrite(A7105_TX_EN_PIN, HIGH);
 
     /* Toggle Bind LED to let user know we're ready. */
     digitalWrite(BIND_LED_PIN, HIGH);

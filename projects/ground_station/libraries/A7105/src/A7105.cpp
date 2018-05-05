@@ -30,12 +30,17 @@
 /** @} */
 
 /**
- * @defgroup A7105 chip select macros
+ * @defgroup A7105 chip select and RX/TX mode macros
  * @{
  */
 
 #define CS_LOW() digitalWrite(_csPin, LOW)
 #define CS_HIGH() digitalWrite(_csPin, HIGH)
+
+#define RX_EN()  digitalWrite(_rxEnPin, HIGH);
+#define RX_DIS() digitalWrite(_rxEnPin, LOW);
+#define TX_EN()  digitalWrite(_txEnPin, HIGH);
+#define TX_DIS() digitalWrite(_txEnPin, LOW);
 
 /** @} */
 
@@ -45,10 +50,19 @@ A7105::A7105() {
 A7105::~A7105() {
 }
 
-void A7105::begin(const uint8_t csPin, const bool useFourWireSpi) {
+void A7105::begin(const uint8_t rxEnPin, const uint8_t txEnPin,
+        const uint8_t csPin, const bool useFourWireSpi) {
 
     _csPin = csPin;
+    _rxEnPin = rxEnPin;
+    _txEnPin = txEnPin;
     pinMode(_csPin, OUTPUT);
+    pinMode(_rxEnPin, OUTPUT);
+    pinMode(_txEnPin, OUTPUT);
+
+    /* Default to RX mode first. TX is only set during writeData().  */
+    RX_EN();
+    TX_DIS();
 
     /* Driving chip select pin high first seems to help stability. */
     CS_HIGH();
@@ -182,6 +196,9 @@ void A7105::setPower(TxPower power) {
 
 void A7105::writeData(const uint8_t* const dpbuffer, const uint8_t len) {
 
+    RX_DIS();
+    TX_EN();
+
     CS_LOW();
     SPI.transfer(A7105_RST_WRPTR);    //reset write FIFO PTR
     CS_HIGH();
@@ -203,6 +220,9 @@ void A7105::writeData(const uint8_t* const dpbuffer, const uint8_t len) {
             break;
         }
     }
+
+    TX_DIS();
+    RX_EN();
 }
 
 void A7105::readData(uint8_t* const dpbuffer, const uint8_t len) {

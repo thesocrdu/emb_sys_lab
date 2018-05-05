@@ -27,7 +27,8 @@ Hubsan::Hubsan() {
 Hubsan::~Hubsan() {
 }
 
-int Hubsan::init(const unsigned int cspin) {
+int Hubsan::init(const uint8_t a7105RxPin, const uint8_t a7105txPin,
+        const uint8_t cspin) {
 
     /**
      * @note The following init code was referenced from both
@@ -43,7 +44,7 @@ int Hubsan::init(const unsigned int cspin) {
      */
 
     /* Initialize the A7105 for 4 wire SPI. */
-    _a7105.begin(cspin, true);
+    _a7105.begin(a7105RxPin, a7105txPin, cspin, true);
 
     _a7105.setID(0x55201041);
 

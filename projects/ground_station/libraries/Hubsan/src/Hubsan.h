@@ -36,9 +36,12 @@ class Hubsan {
          * communication with the Hubsam quadcopter.
          *
          * @param[in] cspin The chip select pin of the A7105.
+         * @param[in] a7105RxPin The RXEN pin number for the A7105 module.
+         * @param[in] a7105RxPin The TXEN pin number for the A7105 module.
          * @return zero if init was successful.
          */
-        int init(const unsigned int cspin);
+        int init(const uint8_t a7105RxPin, const uint8_t a7105txPin,
+                const uint8_t cspin);
 
         /**
          * Updates the internal pointer to the neweset
