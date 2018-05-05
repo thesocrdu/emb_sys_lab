@@ -78,7 +78,7 @@ void A7105::begin(const uint8_t rxEnPin, const uint8_t txEnPin,
     SPI.setBitOrder(MSBFIRST);
 
     /* Send module reset command. */
-    delay(1000);
+    delay(10);
     
     /* Drive chip select pin low until is called. */
     CS_LOW();
