@@ -279,7 +279,8 @@ int Hubsan::init(const uint8_t a7105RxPin, const uint8_t a7105txPin,
 #ifdef GS_DEBUG
     Serial.println(" - Selected Channel: 0x" + String(_channel,HEX));
 #endif
-    _a7105.write(A7105_28_TX_TEST, 0x1F); // Set TX test Register - TX output: -4.8dBm, current: 14.9mA.
+    //_a7105.write(A7105_28_TX_TEST, 0x1F); // Set TX test Register - TX output: -1.3dBm, current: 21.25mA.
+    _a7105.write(A7105_28_TX_TEST, 0x00); // Set TX test Register - TX output: -23.3dBm, current: 12.4mA.
     _a7105.write(A7105_19_RX_GAIN_I, 0x9B); // Set RX Gain register - Manual, Mixer gain: 6dB, LNA gain: 6dB
     _a7105.write(A7105_0F_PLL_I, _channel); // Set PLL Register 1 - Select Channel Offset to channel with the HIGHEST average RSSI from the scanning
     _a7105.sendStrobe(A7105_PLL);
