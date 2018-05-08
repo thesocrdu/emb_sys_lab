@@ -36,34 +36,12 @@ class Hubsan {
          * communication with the Hubsam quadcopter.
          *
          * @param[in] cspin The chip select pin of the A7105.
+         * @param[in] a7105RxPin The RXEN pin number for the A7105 module.
+         * @param[in] a7105RxPin The TXEN pin number for the A7105 module.
          * @return zero if init was successful.
          */
-        int init(const unsigned int cspin);
-
-        /**
-         *
-         */
-        void update_crc();
-
-        /**
-         *
-         */
-        void hubsan_build_bind_packet(uint8_t state);
-
-        /**
-         *
-         */
-        int16_t get_channel();
-
-        /**
-         *
-         */
-        void hubsan_build_packet();
-
-        /**
-         *
-         */
-        uint16_t hubsan_cb();
+        int init(const uint8_t a7105RxPin, const uint8_t a7105txPin,
+                const uint8_t cspin);
 
         /**
          * Updates the internal pointer to the neweset
@@ -73,6 +51,10 @@ class Hubsan {
         void updateFlightControlPtr(q_hubsan_flight_controls_t* const newControls);
 
         /**
+         * Initiates the binding procedure for the Hubsan
+         *
+         * @note Refer to the protocol spec published by Jim Hung
+         *       http://www.jimhung.co.uk/wp-content/uploads/2014/11/HubsanX4_ProtocolSpec_v1.txt
          *
          */
         void bind();
@@ -80,43 +62,31 @@ class Hubsan {
         /**
          * Pushes updated controls to the @sa A7105
          * interface for transmit to the Hubsan.
-         * @param[in] ch Channel override to send packet on.
          */
-        void hubsan_send_data_packet(const uint8_t ch);
+        void hubsan_send_data_packet();
+
+        /**
+         * Set the LEDS on the Hubsan
+         * @param[in] on Set @sa true to turn LEDs on
+         */
+        void setLedState(const bool on);
+
+    private:
 
         /**
          * Updates the CRC field in the @sa currFlightControls.
          */
         void update_flight_control_crc();
 
-        void txPacket(uint8_t *ppacket);
-        void rxPacket(uint8_t *ppacket);
+        /**
+         * Updates the last element byte of the passed array
+         * with the CRC checksum. Used during the binding phase.
+         * @param[in] ppacket The byte packet of size 16
+         */
         void getChecksum(uint8_t *ppacket);
-
-    private:
 
         /** The @sa A7105 interface for this Hubsan object. */
         A7105 _a7105;
-
-        /** Internal Hubsan bind stages. */
-        enum {
-            BIND_1,
-            BIND_2,
-            BIND_3,
-            BIND_4,
-            BIND_5,
-            BIND_6,
-            BIND_7,
-            BIND_8,
-            DATA_1,
-            DATA_2,
-            DATA_3,
-            DATA_4,
-            DATA_5,
-        };
-
-        /** Current bind state for this @sa Hubsan. */
-        uint8_t state;
 
         /** Buffer used for all packet transmissions. */
         uint8_t packet[16];

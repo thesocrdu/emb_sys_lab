@@ -59,7 +59,7 @@ void loop(void) {
 
     //uint16_t hubsanWait = hubs.hubsan_cb();
     //delayMicroseconds(hubsanWait - 400);
-    hubs.hubsan_send_data_packet(0);
+    hubs.hubsan_send_data_packet();
     delay(10);
     
 }

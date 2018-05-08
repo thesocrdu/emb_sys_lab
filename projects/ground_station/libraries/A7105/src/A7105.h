@@ -121,15 +121,14 @@ class A7105 {
 
         /**
          * Initiate the A7105 module communication.
-         * @note Calling this function sets the module's
-         *       chip select pin low. If the user wishes
-         *       to let another SPI device use the bus
-         *       they should call @sa A7105::end() function.
+         * @param[in] rxEnPin The RXEN pin number for the module.
+         * @param[in] txEnPin The TXEN pin number for the module.
          * @param[in] csPin The Chip Select pin number for the module.
          * @param[in] useFourWireSpi Whether to configure the chip to
          *            use pin GIO1 as the MISO pin for SPI.
          */
-        void begin(const uint8_t csPin, const bool useFourWireSpi = true);
+        void begin(const uint8_t rxEnPin, const uint8_t txEnPin,
+                const uint8_t csPin, const bool useFourWireSpi = true);
 
         /**
          * Reads a single register over SPI.
@@ -167,11 +166,8 @@ class A7105 {
          * Writes the provided data buffer to the A7105.
          * @param[in] dpbuffer The buffer of data to send.
          * @param[in] len The length of the buffer in bytes.
-         * @param[in] channel The (unused?) channel ID.
          */
-        void writeData(const uint8_t* const dpbuffer,
-                const uint8_t len,
-                const uint8_t channel);
+        void writeData(const uint8_t* const dpbuffer, const uint8_t len);
 
         /**
          * Reads data from the A7105 into the user provided buffer.
@@ -185,6 +181,11 @@ class A7105 {
         /** The Chip Select pin number for the module. */
         uint8_t _csPin;
 
+        /**  The RXEN pin number for the module. */
+        uint8_t  _rxEnPin;
+
+        /**  The TXEN pin number for the module. */
+        uint8_t  _txEnPin;
 };
 
 #endif /* A7105_H */
